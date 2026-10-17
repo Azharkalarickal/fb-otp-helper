@@ -1,15 +1,31 @@
 const { ImapFlow } = require('imapflow');
 const { simpleParser } = require('mailparser');
 
+// Helper to safely extract string from mailparser headers
+function getHeaderSafeString(headers, key) {
+  if (!headers || typeof headers.get !== 'function') return '';
+  const val = headers.get(key);
+  if (!val) return '';
+  if (typeof val === 'string') return val;
+  if (typeof val === 'object') {
+    if (typeof val.value === 'string') return val.value;
+    if (typeof val.text === 'string') return val.text;
+    if (Array.isArray(val.value)) {
+      return val.value.map(v => (v && (v.address || v.text)) || '').join(' ');
+    }
+  }
+  return String(val);
+}
+
 /**
  * Polls Hostinger IMAP mailbox for Facebook confirmation OTP code.
  * Strictly verifies the recipient email and ensures the email is fresh.
  * 
  * @param {string} targetEmail - The exact email address submitted on Facebook
- * @param {number} timeoutMs - Max wait time in milliseconds (default 90 seconds)
+ * @param {number} timeoutMs - Max wait time in milliseconds (default 120 seconds)
  * @returns {Promise<{otp: string, confirmUrl: string|null}>}
  */
-async function waitForFacebookOtp(targetEmail, timeoutMs = 90000) {
+async function waitForFacebookOtp(targetEmail, timeoutMs = 120000) {
   if (!targetEmail) {
     throw new Error('Target email is required!');
   }
@@ -89,35 +105,45 @@ async function waitForFacebookOtp(targetEmail, timeoutMs = 90000) {
 
             // Check envelope.to
             if (msg.envelope && Array.isArray(msg.envelope.to)) {
-              isTargetRecipient = msg.envelope.to.some(to => to.address && to.address.toLowerCase() === targetLower);
+              isTargetRecipient = msg.envelope.to.some(to => 
+                to && to.address && String(to.address).toLowerCase() === targetLower
+              );
             }
 
             // Check parsed.to
             if (!isTargetRecipient && parsed.to) {
-              const toText = (parsed.to.text || '').toLowerCase();
+              const toText = String(parsed.to.text || '').toLowerCase();
               if (toText.includes(targetLower)) {
                 isTargetRecipient = true;
               } else if (Array.isArray(parsed.to.value)) {
-                isTargetRecipient = parsed.to.value.some(to => to.address && to.address.toLowerCase() === targetLower);
+                isTargetRecipient = parsed.to.value.some(to => 
+                  to && to.address && String(to.address).toLowerCase() === targetLower
+                );
               }
             }
 
-            // Check delivered-to header (catch-all recipient)
+            // Check delivered-to or x-original-to headers safely
             if (!isTargetRecipient && parsed.headers) {
-              const deliv = (parsed.headers.get('delivered-to') || '').toLowerCase();
-              if (deliv.includes(targetLower)) {
+              const deliv = getHeaderSafeString(parsed.headers, 'delivered-to').toLowerCase();
+              const orig = getHeaderSafeString(parsed.headers, 'x-original-to').toLowerCase();
+              if (deliv.includes(targetLower) || orig.includes(targetLower)) {
                 isTargetRecipient = true;
               }
             }
 
-            // If this email was sent to another address (e.g. alexanderwright2 vs alexanderwright1), SKIP IT!
+            // Fallback check: target email present anywhere in full content
+            if (!isTargetRecipient && fullContent.toLowerCase().includes(targetLower)) {
+              isTargetRecipient = true;
+            }
+
+            // If this email belongs to another recipient, skip and keep checking!
             if (!isTargetRecipient) {
               continue;
             }
 
-            // 3. FRESHNESS CHECK: Must be recent (received within last 5 minutes)
+            // 3. FRESHNESS CHECK: Must be recent (received within last 10 minutes)
             const msgDate = parsed.date ? new Date(parsed.date).getTime() : 0;
-            if (msgDate > 0 && (Date.now() - msgDate) > 5 * 60 * 1000) {
+            if (msgDate > 0 && (Date.now() - msgDate) > 10 * 60 * 1000) {
               console.log(`[SKIP] Stale OTP email found for ${targetLower} from ${new Date(msgDate).toLocaleTimeString()}`);
               continue;
             }
@@ -155,7 +181,7 @@ async function waitForFacebookOtp(targetEmail, timeoutMs = 90000) {
         }
       }
 
-      // Wait 3 seconds before polling again
+      // Wait 3 seconds before next poll
       await new Promise(r => setTimeout(r, 3000));
     }
 
