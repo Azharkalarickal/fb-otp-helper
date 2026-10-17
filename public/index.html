@@ -1,14 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Facebook Registration & OTP Helper</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #0b0f19;
@@ -21,13 +19,7 @@
       --success: #10b981;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-    }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
     body {
       background: radial-gradient(circle at top, #151f38 0%, var(--bg) 100%);
       color: var(--text);
@@ -90,11 +82,27 @@
       margin-bottom: 8px;
     }
 
-    .email-display {
+    .email-input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      color: #93c5fd;
       font-size: 16px;
       font-weight: 700;
-      color: #93c5fd;
-      word-break: break-all;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .email-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(24, 119, 242, 0.25);
+    }
+
+    .email-input::placeholder {
+      color: #6b7280;
+      font-weight: 500;
     }
 
     .btn-group {
@@ -146,7 +154,7 @@
     }
 
     .otp-code {
-      font-size: 40px;
+      font-size: 42px;
       font-weight: 800;
       letter-spacing: 6px;
       color: var(--success);
@@ -171,28 +179,24 @@
       margin-right: 6px;
       vertical-align: middle;
     }
-
     @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
+      to { transform: rotate(360deg); }
     }
   </style>
 </head>
-
 <body>
 
   <div class="container">
     <div class="badge">Hostinger IMAP Connected</div>
     <h1>Facebook Account Helper</h1>
-    <p class="subtitle">Catch-all ഇമെയിൽ ജനറേറ്റ് ചെയ്യുക, Facebook-ൽ സൈൻ-അപ്പ് ചെയ്യുമ്പോൾ OTP ഇവിടെ തനിയെ
-      പ്രത്യക്ഷപ്പെടും.</p>
+    <p class="subtitle">നിങ്ങൾ ഉപയോഗിക്കുന്ന ഇമെയിൽ ഇവിടെ ടൈപ്പ് ചെയ്യുക അല്ലെങ്കിൽ റാൻഡം ഇമെയിൽ ജനറേറ്റ് ചെയ്യുക.</p>
 
     <div class="box">
-      <div class="box-label">Your Generated Facebook Email</div>
-      <div id="emailText" class="email-display">Loading email...</div>
+      <div class="box-label">Facebook Email Address</div>
+      <input type="email" id="emailInput" class="email-input" placeholder="Enter your email (e.g. alexanderwright@qudraw.com)" />
+      
       <div class="btn-group">
-        <button class="btn-secondary" onclick="generateNewEmail()">🔄 New Email</button>
+        <button class="btn-secondary" onclick="generateRandomEmail()">🔄 Random Email</button>
         <button class="btn-primary" onclick="copyEmail()">📋 Copy Email</button>
       </div>
     </div>
@@ -207,29 +211,34 @@
       <button class="btn-secondary" style="margin-top: 10px;" onclick="copyOtp()">Copy OTP</button>
     </div>
 
-    <div id="statusMsg" class="status-msg">Click 'Listen for Facebook OTP' after submitting Facebook sign-up form.</div>
+    <div id="statusMsg" class="status-msg">Facebook-ൽ ഇമെയിൽ സബ്മിറ്റ് ചെയ്ത ശേഷം 'Listen for Facebook OTP' ക്ലിക്ക് ചെയ്യുക.</div>
   </div>
 
   <script>
-    let currentEmail = '';
+    const emailInput = document.getElementById('emailInput');
 
-    async function generateNewEmail() {
-      document.getElementById('emailText').innerText = 'Generating...';
+    async function generateRandomEmail() {
+      emailInput.value = 'Generating...';
       try {
         const res = await fetch('/api/generate-email');
         const data = await res.json();
-        currentEmail = data.email;
-        document.getElementById('emailText').innerText = currentEmail;
+        emailInput.value = data.email;
         document.getElementById('otpSection').style.display = 'none';
         document.getElementById('statusMsg').innerText = "Email ready! Copy and paste on Facebook.";
       } catch (e) {
-        document.getElementById('emailText').innerText = 'Error generating email';
+        emailInput.value = '';
+        alert('Error generating random email');
       }
     }
 
     function copyEmail() {
-      navigator.clipboard.writeText(currentEmail);
-      alert('Email copied: ' + currentEmail);
+      const email = emailInput.value.trim();
+      if (!email) {
+        alert('Please enter or generate an email first!');
+        return;
+      }
+      navigator.clipboard.writeText(email);
+      alert('Email copied: ' + email);
     }
 
     function copyOtp() {
@@ -239,7 +248,13 @@
     }
 
     async function startListening() {
-      if (!currentEmail) return;
+      const email = emailInput.value.trim();
+      if (!email) {
+        alert('Please enter or generate an email address first!');
+        emailInput.focus();
+        return;
+      }
+
       const btn = document.getElementById('listenBtn');
       const status = document.getElementById('statusMsg');
 
@@ -251,7 +266,7 @@
         const res = await fetch('/api/get-fb-otp', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: currentEmail })
+          body: JSON.stringify({ email: email })
         });
         const data = await res.json();
 
@@ -271,10 +286,9 @@
       }
     }
 
-    // Load initial email
-    generateNewEmail();
+    // Set default placeholder or initial random email
+    generateRandomEmail();
   </script>
 
 </body>
-
 </html>
