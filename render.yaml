@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: mage-generator
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: HOSTINGER_EMAIL
+        value: mail@qudraw.com
+      - key: HOSTINGER_PASSWORD
+        sync: false
+      - key: DOMAIN
+        value: qudraw.com
+      - key: HOSTINGER_IMAP_HOST
+        value: imap.hostinger.com
+      - key: HOSTINGER_IMAP_PORT
+        value: "993"
+      - key: NODE_ENV
+        value: production

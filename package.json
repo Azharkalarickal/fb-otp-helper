@@ -1,0 +1,27 @@
+{
+  "name": "mage-automation",
+  "version": "1.0.0",
+  "description": "Automated email login for Mage.space with Hostinger Catch-All and IMAP",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "cli": "node automate.js",
+    "test-imap": "node test_imap.js"
+  },
+  "keywords": [
+    "mage.space",
+    "automation",
+    "hostinger",
+    "playwright",
+    "imap"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.6.1",
+    "express": "^5.3.0",
+    "imapflow": "^1.7.8",
+    "mailparser": "^3.9.40",
+    "playwright": "^1.50.1"
+  }
+}

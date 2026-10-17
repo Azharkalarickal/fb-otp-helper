@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Facebook Registration & OTP Helper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: rgba(18, 24, 38, 0.85);
+      --border: rgba(255, 255, 255, 0.08);
+      --primary: #1877f2;
+      --primary-glow: rgba(24, 119, 242, 0.35);
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --success: #10b981;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at top, #151f38 0%, var(--bg) 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 520px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 35px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(12px);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 6px 14px;
+      background: rgba(24, 119, 242, 0.15);
+      color: #60a5fa;
+      border: 1px solid rgba(24, 119, 242, 0.3);
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    p.subtitle {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-bottom: 25px;
+      line-height: 1.5;
+    }
+
+    .box {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+
+    .box-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .email-display {
+      font-size: 16px;
+      font-weight: 700;
+      color: #93c5fd;
+      word-break: break-all;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 4px 15px var(--primary-glow);
+    }
+
+    .btn-primary:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .otp-section {
+      text-align: center;
+      padding: 25px;
+      border-radius: 12px;
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px dashed rgba(16, 185, 129, 0.3);
+      margin-top: 20px;
+      display: none;
+    }
+
+    .otp-code {
+      font-size: 40px;
+      font-weight: 800;
+      letter-spacing: 6px;
+      color: var(--success);
+      margin: 10px 0;
+    }
+
+    .status-msg {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 15px;
+      text-align: center;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.8s linear infinite;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <div class="badge">Hostinger IMAP Connected</div>
+    <h1>Facebook Account Helper</h1>
+    <p class="subtitle">Catch-all ഇമെയിൽ ജനറേറ്റ് ചെയ്യുക, Facebook-ൽ സൈൻ-അപ്പ് ചെയ്യുമ്പോൾ OTP ഇവിടെ തനിയെ
+      പ്രത്യക്ഷപ്പെടും.</p>
+
+    <div class="box">
+      <div class="box-label">Your Generated Facebook Email</div>
+      <div id="emailText" class="email-display">Loading email...</div>
+      <div class="btn-group">
+        <button class="btn-secondary" onclick="generateNewEmail()">🔄 New Email</button>
+        <button class="btn-primary" onclick="copyEmail()">📋 Copy Email</button>
+      </div>
+    </div>
+
+    <button id="listenBtn" class="btn-primary" style="width: 100%; padding: 14px;" onclick="startListening()">
+      ⚡ Listen for Facebook OTP
+    </button>
+
+    <div id="otpSection" class="otp-section">
+      <div style="font-size: 13px; color: var(--success); font-weight: 700;">FACEBOOK CONFIRMATION CODE</div>
+      <div id="otpDisplay" class="otp-code">-----</div>
+      <button class="btn-secondary" style="margin-top: 10px;" onclick="copyOtp()">Copy OTP</button>
+    </div>
+
+    <div id="statusMsg" class="status-msg">Click 'Listen for Facebook OTP' after submitting Facebook sign-up form.</div>
+  </div>
+
+  <script>
+    let currentEmail = '';
+
+    async function generateNewEmail() {
+      document.getElementById('emailText').innerText = 'Generating...';
+      try {
+        const res = await fetch('/api/generate-email');
+        const data = await res.json();
+        currentEmail = data.email;
+        document.getElementById('emailText').innerText = currentEmail;
+        document.getElementById('otpSection').style.display = 'none';
+        document.getElementById('statusMsg').innerText = "Email ready! Copy and paste on Facebook.";
+      } catch (e) {
+        document.getElementById('emailText').innerText = 'Error generating email';
+      }
+    }
+
+    function copyEmail() {
+      navigator.clipboard.writeText(currentEmail);
+      alert('Email copied: ' + currentEmail);
+    }
+
+    function copyOtp() {
+      const otp = document.getElementById('otpDisplay').innerText;
+      navigator.clipboard.writeText(otp);
+      alert('OTP copied: ' + otp);
+    }
+
+    async function startListening() {
+      if (!currentEmail) return;
+      const btn = document.getElementById('listenBtn');
+      const status = document.getElementById('statusMsg');
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Checking Hostinger Inbox...';
+      status.innerText = "Hostinger INBOX & Junk ഫോൾഡറുകളിൽ Facebook OTP പരിശോധിക്കുന്നു...";
+
+      try {
+        const res = await fetch('/api/get-fb-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: currentEmail })
+        });
+        const data = await res.json();
+
+        if (data.success && data.otp) {
+          document.getElementById('otpDisplay').innerText = data.otp;
+          document.getElementById('otpSection').style.display = 'block';
+          status.innerText = "✅ OTP കണ്ടെത്തി! കോപ്പി ചെയ്ത് Facebook-ൽ നൽകുക.";
+          navigator.clipboard.writeText(data.otp);
+        } else {
+          status.innerText = "❌ " + (data.error || "OTP കിട്ടിയില്ല, വീണ്ടും ശ്രമിക്കുക.");
+        }
+      } catch (err) {
+        status.innerText = "❌ Error: " + err.message;
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "⚡ Listen for Facebook OTP";
+      }
+    }
+
+    // Load initial email
+    generateNewEmail();
+  </script>
+
+</body>
+
+</html>
